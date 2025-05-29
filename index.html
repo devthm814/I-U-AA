@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I💖U</title>
+    <!--AA tiktok: devthm-->
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            font-family: Arial, sans-serif;
+            color: white;
+            user-select: none;
+        }
+
+        #star-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            z-index: 0;
+            cursor: grab;
+            height: 100vh;
+            width: 100vw;
+            background: transparent;
+            perspective: 1000px;
+        }
+
+        #starfield-container {
+            position: absolute;
+            width: 200vw;
+            height: 200vh;
+            top: 0;
+            left: 0;
+            transform-style: preserve-3d;
+            will-change: transform;
+            min-width: 200vw;
+            min-height: 200vh;
+        }
+
+        .star {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            filter: drop-shadow(0 0 3px #fff);
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.3);
+            }
+        }
+
+        .meteor {
+            position: absolute;
+            width: 300px;
+            height: 1px;
+            transform-origin: left center;
+            animation: meteorFly var(--duration) linear forwards;
+            opacity: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .meteor::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px 2px #fff;
+            transform: translateY(-50%);
+        }
+
+        .meteor::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right,
+                    rgba(255, 255, 255, 1) 0%,
+                    rgba(255, 255, 255, 0.8) 30%,
+                    rgba(255, 255, 255, 0) 100%);
+            transform: translateY(-50%);
+        }
+
+        @keyframes meteorFly {
+            0% {
+                transform: translate3d(var(--startX), var(--startY), var(--startZ)) rotate(var(--rotate));
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate3d(var(--endX), var(--endY), var(--endZ)) rotate(var(--rotate));
+                opacity: 0;
+            }
+        }
+
+        .falling-meteor {
+            position: absolute;
+            width: 120px;
+            height: 2px;
+            background: linear-gradient(to right,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.6) 20%,
+                    rgba(255, 255, 255, 1) 50%,
+                    rgba(255, 255, 255, 0.6) 80%,
+                    rgba(255, 255, 255, 0) 100%);
+            border-radius: 50% / 50%;
+            filter: drop-shadow(0 0 6px #fff);
+            opacity: 0;
+            animation: fallingMeteorFly linear forwards;
+            z-index: 15;
+            transform-style: preserve-3d;
+            pointer-events: none;
+        }
+
+        @keyframes fallingMeteorFly {
+            0% {
+                opacity: 1;
+                transform: translate3d(var(--startX), var(--startY), var(--startZ)) rotate(20deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate3d(var(--startX), var(--endY), var(--startZ)) rotate(20deg);
+            }
+        }
+
+        .scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            transform-style: preserve-3d;
+            overflow: visible;
+            z-index: 100;
+        }
+
+        .love-element {
+            position: absolute;
+            font-weight: bold;
+            animation: floatDown var(--fall-time) linear forwards;
+            white-space: nowrap;
+            text-shadow: 0 0 5px currentColor;
+            transform-style: preserve-3d;
+            backface-visibility: visible;
+            z-index: 105;
+            pointer-events: none;
+        }
+
+        @keyframes floatDown {
+            0% {
+                transform: translate3d(var(--startX), -150px, 0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate3d(var(--endX), calc(100vh + 150px), 0);
+                opacity: 0;
+            }
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 9999;
+            font-size: 14px;
+            pointer-events: none;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .audio-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .audio-controls button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .audio-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="star-background" title="Kéo để di chuyển nền sao">
+        <div id="starfield-container"></div>
+    </div>
+    <div class="scene" id="scene"></div>
+    <div class="controls">Kéo để xoay, lăn để thu nhỏ</div>
+
+    <audio id="background-music" loop>
+        <source src="extracted_audio.mp3" type="audio/mp3">
+    </audio>
+
+    <div class="audio-controls">
+        <button id="toggle-audio">🎵</button>
+    </div>
+
+    <script>
+        const texts = [
+            "Anh yêu em❤️", "Mãi bên nhau", "Yêu mãi mãi",
+            "Bên em trọn đời", "Nhớ em", "Thương em", "Mãi là của nhau",
+            "Em là tất cả", "Em là duy nhất", "Yêu em nhiều", "Tình yêu của anh", "Hạnh phúc bên em",
+            // Thêm các câu mới:
+            "Em là số 1", "Yêu em vô điều kiện", "Em của anh",
+            "Trái tim này của em", "Mãi mãi yêu em", "Nhớ em nhiều lắm",
+            "Em là định mệnh", "Tình yêu đầu đời", "Anh chỉ yêu mình em",
+            "Yêu em nhất trên đời", "Em là cả thế giới", "Chỉ có em mà thôi"
+        ];
+        const colors = [
+            '#ffb6c1', '#fff0f5', '#ff69b4', '#ffe4e1',
+            '#ff1493', '#fff', '#ff9999', '#ffcccc',
+            '#ff66b2', '#ff99cc', '#ffccdd'
+        ];
+        const fonts = [
+            'Arial', 'Segoe UI', 'Comic Sans MS', 'Tahoma', 'Verdana', 'cursive',
+            'Courier New', 'Georgia', 'Palatino'
+        ];
+        const heartSymbols = ['❤️', '💖', '💗', '💓', '💘', '💝', '💞', '💕'];
+
+        let dragTranslateX = 0;
+        let dragTranslateY = 0;
+        let rotateX = -20;
+        let rotateY = 0;
+        let scale = 1;
+
+        function createStars() {
+            const container = document.getElementById('starfield-container');
+            for (let i = 0; i < 800; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = (Math.random() * 200) + 'vw';
+                star.style.top = (Math.random() * 200) + 'vh';
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                container.appendChild(star);
+            }
+        }
+
+        function createMeteors() {
+            const container = document.getElementById('starfield-container');
+            function createSingleMeteor() {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                const meteorColors = ['#fff', '#aaf', '#faa', '#afa'];
+                const color = meteorColors[Math.floor(Math.random() * meteorColors.length)];
+                meteor.style.color = color;
+
+                const startX = Math.random() * 200 + 10;
+                const startY = Math.random() * 60;
+                const startZ = Math.random() * 500 - 250;
+
+                const endX = startX - (Math.random() * 40 + 20);
+                const endY = startY + (Math.random() * 50 + 50);
+                const endZ = startZ + (Math.random() * 200 - 100);
+
+                const rotate = Math.random() * 360;
+                const duration = Math.random() * 2000 + 1000;
+
+                meteor.style.setProperty('--startX', `${startX}vw`);
+                meteor.style.setProperty('--startY', `${startY}vh`);
+                meteor.style.setProperty('--startZ', `${startZ}px`);
+                meteor.style.setProperty('--endX', `${endX}vw`);
+                meteor.style.setProperty('--endY', `${endY}vh`);
+                meteor.style.setProperty('--endZ', `${endZ}px`);
+                meteor.style.setProperty('--rotate', `${rotate}deg`);
+                meteor.style.setProperty('--duration', `${duration}ms`);
+
+                container.appendChild(meteor);
+                setTimeout(() => meteor.remove(), duration + 100);
+            }
+            setInterval(() => {
+                createSingleMeteor();
+                if (Math.random() > 0.7) setTimeout(createSingleMeteor, 200);
+            }, 1500);
+        }
+
+        function createFallingMeteors() {
+            const container = document.getElementById('starfield-container');
+            function createFallingMeteor() {
+                const meteor = document.createElement('div');
+                meteor.className = 'falling-meteor';
+
+                const startX = Math.random() * 200;
+                const startY = -5;
+                const startZ = (Math.random() - 0.5) * 800;
+                const endY = 210;
+
+                const duration = Math.random() * 2000 + 2500;
+
+                meteor.style.setProperty('--startX', `${startX}vw`);
+                meteor.style.setProperty('--startY', `${startY}vh`);
+                meteor.style.setProperty('--startZ', `${startZ}px`);
+                meteor.style.setProperty('--endY', `${endY}vh`);
+                meteor.style.animationDuration = `${duration}ms`;
+
+                container.appendChild(meteor);
+                setTimeout(() => meteor.remove(), duration + 100);
+            }
+            setInterval(() => {
+                createFallingMeteor();
+                if (Math.random() > 0.8) setTimeout(createFallingMeteor, 400);
+            }, 800);
+        }
+
+        function createLoveElements() {
+            const scene = document.getElementById('scene');
+            setInterval(() => {
+                const isText = Math.random() > 0.4;
+                const element = document.createElement('div');
+                element.className = 'love-element';
+
+                if (isText) {
+                    element.textContent = texts[Math.floor(Math.random() * texts.length)];
+                    element.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    element.style.fontFamily = fonts[Math.floor(Math.random() * fonts.length)];
+                    element.style.fontSize = (Math.random() * 10 + 16) + 'px';
+                } else {
+                    element.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                    element.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    element.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                }
+
+                const startX = Math.random() * 80 + 10;
+                const drift = (Math.random() - 0.5) * 40;
+                element.style.setProperty('--startX', `${startX}vw`);
+                element.style.setProperty('--endX', `${startX + drift}vw`);
+                element.style.setProperty('--fall-time', (Math.random() * 6000 + 4000) + 'ms');
+
+                scene.appendChild(element);
+                setTimeout(() => element.remove(), 10000);
+            }, 500);
+        }
+
+        function setupStarBackgroundDrag() {
+            const bg = document.getElementById('star-background');
+            const container = document.getElementById('starfield-container');
+            let dragging = false;
+            let startX = 0, startY = 0;
+            let dragTranslateX = 0, dragTranslateY = 0;
+
+            bg.style.cursor = 'grab';
+
+            bg.addEventListener('mousedown', e => {
+                dragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                bg.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', e => {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                dragTranslateX = dx;
+                dragTranslateY = dy;
+                updateStarfieldTransform();
+            });
+
+            document.addEventListener('mouseup', () => {
+                dragging = false;
+                bg.style.cursor = 'grab';
+            });
+
+            document.addEventListener('wheel', e => {
+                scale += e.deltaY * -0.001;
+                scale = Math.min(Math.max(0.5, scale), 2);
+                updateSceneTransform();
+            });
+        }
+
+        function setupScene3DInteraction() {
+            const scene = document.getElementById('scene');
+            scene.style.transformOrigin = 'center center';
+            let dragging = false;
+            let prevX = 0, prevY = 0;
+
+            scene.addEventListener('mousedown', e => {
+                dragging = true;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            });
+
+            document.addEventListener('mousemove', e => {
+                if (!dragging) return;
+                const dx = e.clientX - prevX;
+                const dy = e.clientY - prevY;
+                rotateY += dx * 0.2;
+                rotateX += dy * 0.2;
+                prevX = e.clientX;
+                prevY = e.clientY;
+                updateSceneTransform();
+                updateStarfieldTransform();
+            });
+
+            document.addEventListener('mouseup', () => {
+                dragging = false;
+            });
+        }
+
+        function updateSceneTransform() {
+            const scene = document.getElementById('scene');
+            scene.style.transform = `scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+
+        function updateStarfieldTransform() {
+            const container = document.getElementById('starfield-container');
+            const maxTranslateVW = 40;
+            const maxTranslateVH = 40;
+
+            let offsetX = -(rotateY / 360) * maxTranslateVW * window.innerWidth / 100;
+            let offsetY = -(rotateX / 360) * maxTranslateVH * window.innerHeight / 100;
+
+            let translateX = dragTranslateX + offsetX;
+            let translateY = dragTranslateY + offsetY;
+
+            const maxX = window.innerWidth;
+            const minX = -window.innerWidth;
+            const maxY = window.innerHeight;
+            const minY = -window.innerHeight;
+
+            translateX = Math.min(maxX, Math.max(minX, translateX));
+            translateY = Math.min(maxY, Math.max(minY, translateY));
+
+            container.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
+        }
+
+        function setupAudioControl() {
+            const audio = document.getElementById('background-music');
+            const toggleButton = document.getElementById('toggle-audio');
+
+            // Thử phát nhạc khi trang web tải xong
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // Tự động phát thành công
+                    toggleButton.innerHTML = '🔊';
+                }).catch(() => {
+                    // Không thể tự động phát (chính sách trình duyệt)
+                    audio.pause();
+                    toggleButton.innerHTML = '🔇';
+                });
+            }
+
+            toggleButton.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                    toggleButton.innerHTML = '🔊';
+                } else {
+                    audio.pause();
+                    toggleButton.innerHTML = '🔇';
+                }
+            });
+        }
+
+        window.onload = () => {
+            createStars();
+            createMeteors();
+            createFallingMeteors();
+            createLoveElements();
+            setupStarBackgroundDrag();
+            setupScene3DInteraction();
+            setupAudioControl();
+            updateSceneTransform(); // Khởi tạo transform ban đầu
+        }
+    </script>
+</body>
+
+</html>
