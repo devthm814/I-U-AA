@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>I💖U</title>
     <!--AA tiktok: devthm-->
     <style>
@@ -388,35 +388,81 @@
             let startX = 0, startY = 0;
             let dragTranslateX = 0, dragTranslateY = 0;
 
-            bg.style.cursor = 'grab';
+            // Mouse Events
+            bg.addEventListener('mousedown', handleDragStart);
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
 
-            bg.addEventListener('mousedown', e => {
+            // Touch Events
+            bg.addEventListener('touchstart', e => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleDragStart(touch);
+            });
+            document.addEventListener('touchmove', e => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleDragMove(touch);
+            });
+            document.addEventListener('touchend', handleDragEnd);
+
+            // Zoom events
+            document.addEventListener('wheel', handleZoom);
+            // Pinch zoom
+            let initialPinchDistance = null;
+            document.addEventListener('touchstart', e => {
+                if (e.touches.length === 2) {
+                    initialPinchDistance = getPinchDistance(e.touches);
+                }
+            });
+            document.addEventListener('touchmove', e => {
+                if (e.touches.length === 2 && initialPinchDistance !== null) {
+                    const currentDistance = getPinchDistance(e.touches);
+                    const delta = (currentDistance - initialPinchDistance) * 0.01;
+                    scale += delta;
+                    scale = Math.min(Math.max(0.5, scale), 2);
+                    updateSceneTransform();
+                    initialPinchDistance = currentDistance;
+                }
+            });
+            document.addEventListener('touchend', () => {
+                initialPinchDistance = null;
+            });
+
+            function handleDragStart(e) {
                 dragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
                 bg.style.cursor = 'grabbing';
-            });
+            }
 
-            document.addEventListener('mousemove', e => {
+            function handleDragMove(e) {
                 if (!dragging) return;
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-
                 dragTranslateX = dx;
                 dragTranslateY = dy;
                 updateStarfieldTransform();
-            });
+            }
 
-            document.addEventListener('mouseup', () => {
+            function handleDragEnd() {
                 dragging = false;
                 bg.style.cursor = 'grab';
-            });
+            }
 
-            document.addEventListener('wheel', e => {
+            function handleZoom(e) {
+                e.preventDefault();
                 scale += e.deltaY * -0.001;
                 scale = Math.min(Math.max(0.5, scale), 2);
                 updateSceneTransform();
-            });
+            }
+
+            function getPinchDistance(touches) {
+                return Math.hypot(
+                    touches[1].clientX - touches[0].clientX,
+                    touches[1].clientY - touches[0].clientY
+                );
+            }
         }
 
         function setupScene3DInteraction() {
@@ -425,13 +471,31 @@
             let dragging = false;
             let prevX = 0, prevY = 0;
 
-            scene.addEventListener('mousedown', e => {
+            // Mouse Events
+            scene.addEventListener('mousedown', handleStart);
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+
+            // Touch Events
+            scene.addEventListener('touchstart', e => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleStart(touch);
+            });
+            document.addEventListener('touchmove', e => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleMove(touch);
+            });
+            document.addEventListener('touchend', handleEnd);
+
+            function handleStart(e) {
                 dragging = true;
                 prevX = e.clientX;
                 prevY = e.clientY;
-            });
+            }
 
-            document.addEventListener('mousemove', e => {
+            function handleMove(e) {
                 if (!dragging) return;
                 const dx = e.clientX - prevX;
                 const dy = e.clientY - prevY;
@@ -441,11 +505,11 @@
                 prevY = e.clientY;
                 updateSceneTransform();
                 updateStarfieldTransform();
-            });
+            }
 
-            document.addEventListener('mouseup', () => {
+            function handleEnd() {
                 dragging = false;
-            });
+            }
         }
 
         function updateSceneTransform() {
@@ -512,7 +576,7 @@
             setupStarBackgroundDrag();
             setupScene3DInteraction();
             setupAudioControl();
-            updateSceneTransform(); // Khởi tạo transform ban đầu
+            updateSceneTransform();
         }
     </script>
 </body>
